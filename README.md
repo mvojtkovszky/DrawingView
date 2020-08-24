@@ -22,6 +22,6 @@ allprojects {
 And make sure this is in your app build.gradle
 ``` gradle
 dependencies {
-  implementation 'com.github.mvojtkovszky:DrawingView:1.0.0'
+  implementation 'com.github.mvojtkovszky:DrawingView:$latest_version'
 }
 ```
