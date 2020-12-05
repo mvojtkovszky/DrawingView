@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
+    id 'maven-publish'
 }
 
 android {
@@ -37,4 +38,57 @@ dependencies {
     testImplementation 'junit:junit:4.13.1'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+}
+
+// handle publishing
+project.afterEvaluate {
+    publishing {
+        publications {
+            library(MavenPublication) {
+                groupId = 'com.github.mvojtkovszky'
+                artifactId = 'DrawingView'
+                version = android.defaultConfig.versionName
+                artifact bundleDebugAar
+                // make sure pom has all dependencies
+                pom.withXml {
+                    def dependenciesNode = asNode().appendNode('dependencies')
+                    configurations.api.allDependencies
+                            .findAll { dependency -> dependency.name != "unspecified" }
+                            .each { dependency ->
+                                addDependency(dependenciesNode.appendNode('dependency'), dependency, "compile")
+                            }
+                    configurations.implementation.allDependencies
+                            .findAll { dependency -> !configurations.api.allDependencies.contains(dependency) }
+                            .findAll { dependency -> dependency.name != "unspecified" }
+                            .each { dependency ->
+                                addDependency(dependenciesNode.appendNode('dependency'), dependency, "runtime")
+                            }
+                }
+            }
+        }
+    }
+}
+
+static def addDependency(dependencyNode, dependency, scope) {
+    dependencyNode.appendNode('groupId', dependency.group)
+    dependencyNode.appendNode('artifactId', dependency.name)
+    dependencyNode.appendNode('version', dependency.version)
+    dependencyNode.appendNode('scope', scope)
+}
+
+task javadoc(type: Javadoc) {
+    failOnError false
+    source = android.sourceSets.main.java.sourceFiles
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    classpath += configurations.compile
+}
+
+// build a jar with javadoc
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveClassifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar
 }
