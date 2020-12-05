@@ -8,6 +8,7 @@ import android.view.MotionEvent
 import android.view.View
 import kotlin.math.abs
 
+@Suppress("unused")
 class DrawingView : View {
 
     companion object {

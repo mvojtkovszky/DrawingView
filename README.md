@@ -9,19 +9,18 @@ Simply create view in your code or in xml and you're good to go.
 <br/>
 
 ## Nice! How do I get started?
-Add it in your root build.gradle at the end of repositories:
+Make sure root build.gradle repositories include JitPack
 ``` gradle
 allprojects {
-  repositories {
-    ...
-    maven { url 'https://jitpack.io' }
-  }
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
 }
 ```
 
-And make sure this is in your app build.gradle
+And BillingHelper dependency is added to app build.gradle
 ``` gradle
 dependencies {
-  implementation 'com.github.mvojtkovszky:DrawingView:$latest_version'
+    implementation 'com.github.mvojtkovszky:DrawingView:$latest_version'
 }
 ```
