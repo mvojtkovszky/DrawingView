@@ -18,7 +18,7 @@ allprojects {
 }
 ```
 
-And BillingHelper dependency is added to app build.gradle
+And DrawingView dependency is added to app build.gradle
 ``` gradle
 dependencies {
     implementation 'com.github.mvojtkovszky:DrawingView:$latest_version'
