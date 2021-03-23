@@ -32,6 +32,8 @@ class DrawingView : View {
     private val undonePaints = mutableListOf<Paint>()
 
     private lateinit var drawCanvas: Canvas // drawing canvas
+    private var sizeChanged = false // flag to keep track when onSizeChanged happened
+
     private var xStart: Float = 0f // reference positions for last move (x)
     private var yStart: Float = 0f // reference positions for last move (y)
     private var isCurrentlyMoving = false
@@ -70,14 +72,18 @@ class DrawingView : View {
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        //view given size
+        // view given size
         super.onSizeChanged(w, h, oldw, oldh)
-
-        val canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-        drawCanvas = Canvas(canvasBitmap)
+        // signal that size changed so new canvas can be constructed
+        sizeChanged = true
     }
 
     override fun onDraw(canvas: Canvas) {
+        if (sizeChanged || this::drawCanvas.isInitialized.not()) {
+            drawCanvas = canvas
+            sizeChanged = false
+        }
+
         for (i in drawPathHistory.indices) {
             val path = drawPathHistory[i]
             val paint = drawPaintHistory[i]
