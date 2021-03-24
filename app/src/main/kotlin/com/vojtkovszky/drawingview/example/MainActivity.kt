@@ -25,8 +25,24 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        binding.textClear.setOnClickListener { binding.drawingView.startNew() }
-        binding.textUndo.setOnClickListener { binding.drawingView.undo() }
-        binding.textRedo.setOnClickListener { binding.drawingView.redo() }
+        binding.textClear.setOnClickListener {
+            binding.drawingView.startNew()
+        }
+
+        binding.textUndo.setOnClickListener {
+            binding.drawingView.undo()
+        }
+        binding.textUndo.setOnLongClickListener {
+            binding.drawingView.undoAll()
+            return@setOnLongClickListener false
+        }
+
+        binding.textRedo.setOnClickListener {
+            binding.drawingView.redo()
+        }
+        binding.textRedo.setOnLongClickListener {
+            binding.drawingView.redoAll()
+            return@setOnLongClickListener false
+        }
     }
 }

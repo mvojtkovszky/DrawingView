@@ -9,10 +9,17 @@ import android.view.View
 import kotlin.math.abs
 
 @Suppress("unused")
-class DrawingView : View {
+class DrawingView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyle: Int = 0
+) : View(context, attrs, defStyle) {
 
     companion object {
-        private const val TOUCH_TOLERANCE = 4f
+        private const val DEFAULT_TOUCH_TOLERANCE = 4f
+        private const val DEFAULT_PAINT_COLOR = Color.BLACK
+        private const val DEFAULT_CANVAS_COLOR = Color.WHITE
+        private const val DEFAULT_BRUSH_SIZE = 8f
     }
 
     // region Private attributes
@@ -31,9 +38,6 @@ class DrawingView : View {
     private val undonePaths = mutableListOf<Path>()
     private val undonePaints = mutableListOf<Paint>()
 
-    private lateinit var drawCanvas: Canvas // drawing canvas
-    private var sizeChanged = false // flag to keep track when onSizeChanged happened
-
     private var xStart: Float = 0f // reference positions for last move (x)
     private var yStart: Float = 0f // reference positions for last move (y)
     private var isCurrentlyMoving = false
@@ -47,42 +51,71 @@ class DrawingView : View {
     // endregion
 
     // region Public attributes
-    var paintColor = 0x000000 // initial color
+    /**
+     * Color of the paint. Default is
+     */
+    var paintColor = DEFAULT_PAINT_COLOR
         set(value) {
             field = value
             invalidate()
             drawPaint.color = paintColor
         }
-    var brushSize: Float = 0f // initial brush size
+
+    /**
+     * Color of the canvas
+     */
+    var canvasColor = DEFAULT_CANVAS_COLOR
+        set(value) {
+            field = value
+            invalidate()
+        }
+
+    /**
+     * Size of the brush in pixels
+     */
+    var brushSize: Float = DEFAULT_BRUSH_SIZE
         set(value) {
             field = value
             drawPaint.strokeWidth = value
         }
+
+    /**
+     * Flag to determine if drawing is allowed.
+     * If false, all touch events will be ignored.
+     */
     var isDrawingEnabled = true // drawing enabled flag
+
+    /**
+     * Eraser. If set to true, instead of painting, canvas will be clearing.
+     */
     var isErasing = false // isErasing flag
         set(value) {
             field = value
             drawPaint.xfermode = if (value) PorterDuffXfermode(PorterDuff.Mode.CLEAR) else null
         }
-    var listenerEmptyState: ((Boolean) -> Unit)? = null // callback when canvas changes to empty or from empty to not empty
-    var listenerDrawingInProgress: ((Boolean) -> Unit)? = null // callback when user starts or stops drawing
+
+    /**
+     * In pixels, minimum absolute distance of travel needed in order to register a draw.
+     * However, only a tap on the canvas will be drawn as a circle with diameter of [brushSize]
+     */
+    var touchTolerance = DEFAULT_TOUCH_TOLERANCE // number of pixels
+
+    /**
+     * Callback when canvas changes from empty to non-empty or non-empty to empty.
+     * For example, callback will return true when drawing anything on an empty canvas and false
+     * when calling [startNew] or [redo] a last element.
+     * But it will not return anything if you happen to use eraser to clear the whole canvas
+     */
+    var listenerEmptyState: ((isCanvasEmpty: Boolean) -> Unit)? = null
+
+    /**
+     * Callback when user starts or stops drawing (dragging).
+     */
+    var listenerDrawingInProgress: ((drawInProgress: Boolean) -> Unit)? = null
     // endregion
 
-    constructor(context: Context) : super(context)
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
-
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        // view given size
-        super.onSizeChanged(w, h, oldw, oldh)
-        // signal that size changed so new canvas can be constructed
-        sizeChanged = true
-    }
-
     override fun onDraw(canvas: Canvas) {
-        if (sizeChanged || this::drawCanvas.isInitialized.not()) {
-            drawCanvas = canvas
-            sizeChanged = false
-        }
+        canvas.drawColor(canvasColor)
 
         for (i in drawPathHistory.indices) {
             val path = drawPathHistory[i]
@@ -90,6 +123,8 @@ class DrawingView : View {
             canvas.drawPath(path, paint)
         }
         canvas.drawPath(drawPath, drawPaint)
+
+        super.onDraw(canvas)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -120,7 +155,7 @@ class DrawingView : View {
             MotionEvent.ACTION_MOVE -> {
                 val dx = abs(touchX - xStart)
                 val dy = abs(touchY - yStart)
-                if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
+                if (dx >= touchTolerance || dy >= touchTolerance) {
                     drawPath.quadTo(xStart, yStart, (touchX + xStart) / 2, (touchY + yStart) / 2)
                     xStart = touchX
                     yStart = touchY
@@ -133,8 +168,6 @@ class DrawingView : View {
                 if (!isCurrentlyMoving && xStart == touchX && yStart == touchY) {
                     drawPath.addCircle(touchX, touchY, 0.1f, Path.Direction.CW)
                 }
-
-                drawCanvas.drawPath(drawPath, drawPaint)
 
                 drawPathHistory.add(drawPath)
                 drawPaintHistory.add(Paint(drawPaint))
@@ -157,11 +190,9 @@ class DrawingView : View {
 
     // region Public methods
     /**
-     * Clear canvas and history
+     * Clear canvas. Will also clear all history
      */
     fun startNew() {
-        drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR)
-
         drawPathHistory.clear()
         drawPaintHistory.clear()
         undonePaths.clear()
@@ -188,6 +219,17 @@ class DrawingView : View {
     }
 
     /**
+     * Undo all known steps
+     * Will look similar as [startNew], but the whole history remains and can be redone using
+     * [redo] or [redoAll]
+     */
+    fun undoAll() {
+        repeat(drawPathHistory.size) {
+            undo()
+        }
+    }
+
+    /**
      * Redo
      */
     fun redo() {
@@ -199,11 +241,27 @@ class DrawingView : View {
     }
 
     /**
+     * Redo all known undone steps
+     */
+    fun redoAll() {
+        repeat(undonePaths.size) {
+            redo()
+        }
+    }
+
+    /**
      * Cancel current path in progress
      */
     fun invalidateLastPath() {
         drawPath.reset()
         invalidate()
+    }
+
+    /**
+     * Determine if canvas is empty.
+     */
+    fun isDrawingEmpty(): Boolean {
+        return isDrawingEmpty
     }
     // endregion
 }
