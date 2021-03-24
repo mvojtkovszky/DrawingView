@@ -253,6 +253,13 @@ class DrawingView @JvmOverloads constructor(
     }
 
     /**
+     * Clears undone history, essentially making [redo] do nothing
+     */
+    fun clearRedoHistory() {
+        undonePaths.clear()
+    }
+
+    /**
      * Cancel current path in progress
      */
     fun invalidateLastPath() {
