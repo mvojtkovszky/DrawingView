@@ -95,7 +95,7 @@ class DrawingView @JvmOverloads constructor(
         }
 
     /**
-     * In pixels, minimum absolute distance of travel needed in order to register a draw.
+     * In pixels, minimum absolute distance of travel needed in order to register start of an ongoing move.
      * However, only a tap on the canvas will be drawn as a circle with diameter of [brushSize]
      */
     var touchTolerance = DEFAULT_TOUCH_TOLERANCE // number of pixels
@@ -236,7 +236,10 @@ class DrawingView @JvmOverloads constructor(
         if (undonePaths.size > 0) {
             drawPathHistory.add(undonePaths.removeAt(undonePaths.size - 1))
             drawPaintHistory.add(undonePaints.removeAt(undonePaints.size - 1))
+
             invalidate()
+
+            isDrawingEmpty = false
         }
     }
 
