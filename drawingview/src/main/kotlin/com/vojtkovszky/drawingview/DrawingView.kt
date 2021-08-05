@@ -8,7 +8,7 @@ import android.view.MotionEvent
 import android.view.View
 import kotlin.math.abs
 
-@Suppress("unused")
+@Suppress("MemberVisibilityCanBePrivate", "unused")
 class DrawingView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,

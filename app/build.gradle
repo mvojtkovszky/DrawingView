@@ -4,13 +4,13 @@ plugins {
 }
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.2"
+    compileSdkVersion project.properties['compileSdkVersion'] as Integer
+    buildToolsVersion project.properties['buildToolsVersion'] as String
 
     defaultConfig {
         applicationId "com.vojtkovszky.drawingview.example"
-        minSdkVersion 16
-        targetSdkVersion 30
+        minSdkVersion project.properties['minSdkVersion'] as Integer
+        targetSdkVersion project.properties['targetSdkVersion'] as Integer
         versionCode 1
         versionName "1.0"
 
@@ -26,17 +26,24 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
     buildFeatures {
-        viewBinding = true
+        viewBinding true
     }
 }
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.appcompat:appcompat:1.3.0'
     implementation project(":drawingview")
 
-    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 }
