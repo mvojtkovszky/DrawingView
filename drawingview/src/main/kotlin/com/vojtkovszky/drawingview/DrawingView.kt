@@ -45,7 +45,7 @@ class DrawingView @JvmOverloads constructor(
         set(value) {
             field = value
             if (value) {
-                listenerEmptyState?.let { it(true) }
+                listenerEmptyState?.invoke(true)
             }
         }
     // endregion
@@ -149,7 +149,7 @@ class DrawingView @JvmOverloads constructor(
                 xStart = touchX
                 yStart = touchY
 
-                listenerDrawingInProgress?.let { it(true) }
+                listenerDrawingInProgress?.invoke(true)
             }
 
             MotionEvent.ACTION_MOVE -> {
@@ -174,11 +174,11 @@ class DrawingView @JvmOverloads constructor(
 
                 drawPath = Path()
 
-                if (isDrawingEmpty) listenerEmptyState?.let { it(false) }
+                if (isDrawingEmpty) listenerEmptyState?.invoke(false)
                 isDrawingEmpty = false
 
                 isCurrentlyMoving = false
-                listenerDrawingInProgress?.let { it(false) }
+                listenerDrawingInProgress?.invoke(false)
             }
 
             else -> return false
