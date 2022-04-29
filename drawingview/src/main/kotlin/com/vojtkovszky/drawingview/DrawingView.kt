@@ -37,7 +37,11 @@ class DrawingView @JvmOverloads constructor(
      * State holding all necessary information to populate the view and keeping track of it's 
      * active history
      */
-    val state = DrawingViewState()
+    var state = DrawingViewState()
+        set(value) {
+            field = value
+            invalidate()
+        }
 
     private var xStart: Float = 0f // reference positions for last move (x)
     private var yStart: Float = 0f // reference positions for last move (y)
