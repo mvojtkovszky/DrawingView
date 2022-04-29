@@ -115,11 +115,13 @@ class DrawingView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         canvas.drawColor(canvasColor)
 
-        for (i in state.drawPathHistory.indices) {
-            val path = state.drawPathHistory[i]
-            val paint = state.drawPaintHistory[i]
-            canvas.drawPath(path, paint)
+        val numStepsInHistory = state.numHistorySteps()
+        if (numStepsInHistory > 0) {
+            for (i in 0 until numStepsInHistory) {
+                canvas.drawPath(state.getPathFromHistory(i), state.getPaintFromHistory(i))
+            }
         }
+
         canvas.drawPath(drawPath, drawPaint)
 
         super.onDraw(canvas)
@@ -138,8 +140,7 @@ class DrawingView @JvmOverloads constructor(
         when (event.action) {
 
             MotionEvent.ACTION_DOWN -> {
-                state.undonePaths.clear()
-                state.undonePaints.clear()
+                state.clearRedoHistory()
 
                 drawPath.reset()
                 drawPath.moveTo(touchX, touchY)
@@ -167,10 +168,9 @@ class DrawingView @JvmOverloads constructor(
                     drawPath.addCircle(touchX, touchY, 0.1f, Path.Direction.CW)
                 }
 
-                val drawingEmptyBeforeAdding = state.isDrawingEmpty()
+                val drawingEmptyBeforeAdding = state.isHistoryEmpty()
 
-                state.drawPathHistory.add(drawPath)
-                state.drawPaintHistory.add(Paint(drawPaint))
+                state.addToHistory(drawPath, drawPaint)
 
                 drawPath = Path()
 
@@ -204,12 +204,12 @@ class DrawingView @JvmOverloads constructor(
      * Undo
      */
     fun undo() {
-        if (state.drawPathHistory.size > 0) {
+        if (!state.isHistoryEmpty()) {
             state.undo()
             invalidate()
         }
 
-        if (state.isDrawingEmpty()) {
+        if (state.isHistoryEmpty()) {
             listenerEmptyState?.invoke(true)
         }
     }
@@ -220,7 +220,7 @@ class DrawingView @JvmOverloads constructor(
      * [redo] or [redoAll]
      */
     fun undoAll() {
-        repeat(state.drawPathHistory.size) {
+        repeat(state.numHistorySteps()) {
             undo()
         }
     }
@@ -229,7 +229,7 @@ class DrawingView @JvmOverloads constructor(
      * Redo
      */
     fun redo() {
-        if (state.undonePaths.size > 0) {
+        if (!state.isUndoneEmpty()) {
             state.redo()
             invalidate()
         }
@@ -239,7 +239,7 @@ class DrawingView @JvmOverloads constructor(
      * Redo all known undone steps
      */
     fun redoAll() {
-        repeat(state.undonePaths.size) {
+        repeat(state.numUndoneSteps()) {
             redo()
         }
     }
@@ -248,7 +248,7 @@ class DrawingView @JvmOverloads constructor(
      * Clears undone history, essentially making [redo] do nothing
      */
     fun clearRedoHistory() {
-        state.undonePaths.clear()
+        state.clearRedoHistory()
     }
 
     /**
@@ -263,8 +263,7 @@ class DrawingView @JvmOverloads constructor(
      * Determine if canvas is empty.
      */
     fun isDrawingEmpty(): Boolean {
-        return state.isDrawingEmpty()
+        return state.isHistoryEmpty()
     }
-
     // endregion
 }
