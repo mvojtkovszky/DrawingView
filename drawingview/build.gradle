@@ -12,7 +12,6 @@ android {
     defaultConfig {
         minSdkVersion project.properties['minSdkVersion'] as Integer
         targetSdkVersion project.properties['targetSdkVersion'] as Integer
-        versionName project.properties['versionName'] as String
     }
 
     sourceSets {
