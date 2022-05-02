@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 1.5.0 (2022-05-02)
+* all properties in `DrawingViewState` are custom, allowing us to completely control serialization
+
 ## 1.4.0 (2022-04-29)
 * add `DrawingViewState` containing all the needed information to draw image on canvas
 * bump Kotlin to 1.6.21, Gradle plugin to 7.1.3

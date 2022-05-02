@@ -1,7 +1,7 @@
 package com.vojtkovszky.drawingview
 
-import android.graphics.Paint
-import android.graphics.Path
+import com.vojtkovszky.drawingview.data.SerializablePaint
+import com.vojtkovszky.drawingview.data.SerializablePath
 import java.io.Serializable
 
 /**
@@ -10,15 +10,15 @@ import java.io.Serializable
  */
 class DrawingViewState: Serializable {
 
-    private val drawPathHistory = mutableListOf<Path>()
-    private val drawPaintHistory = mutableListOf<Paint>()
-    private val undonePaths = mutableListOf<Path>()
-    private val undonePaints = mutableListOf<Paint>()
+    private val drawPathHistory = mutableListOf<SerializablePath>()
+    private val drawPaintHistory = mutableListOf<SerializablePaint>()
+    private val undonePaths = mutableListOf<SerializablePath>()
+    private val undonePaints = mutableListOf<SerializablePaint>()
 
     // add path and paint to history
-    internal fun addToHistory(path: Path, paint: Paint) {
+    internal fun addToHistory(path: SerializablePath, paint: SerializablePaint) {
         drawPathHistory.add(path)
-        drawPaintHistory.add(Paint(paint))
+        drawPaintHistory.add(paint)
     }
 
     // clears redo history by cleaning undone paths and paints
@@ -28,12 +28,12 @@ class DrawingViewState: Serializable {
     }
 
     // return single path from history on index
-    internal fun getPathFromHistory(index: Int): Path {
+    internal fun getPathFromHistory(index: Int): SerializablePath {
         return drawPathHistory[index]
     }
 
     // return single paint from history on index
-    internal fun getPaintFromHistory(index: Int): Paint {
+    internal fun getPaintFromHistory(index: Int): SerializablePaint {
         return drawPaintHistory[index]
     }
 
@@ -69,17 +69,13 @@ class DrawingViewState: Serializable {
         undonePaints.add(drawPaintHistory.removeAt(drawPaintHistory.size - 1))
     }
 
-    /**
-     * Determine if we have any paths or paints in history
-     */
-    fun isHistoryEmpty(): Boolean {
+    // determine if we have any paths or paints in history
+    internal fun isHistoryEmpty(): Boolean {
         return drawPathHistory.isEmpty() //&& drawPaintHistory.isEmpty()
     }
 
-    /**
-     * Determine if we have any paths or paints in undo history
-     */
-    fun isUndoneEmpty(): Boolean {
+    //Determine if we have any paths or paints in undo history
+    internal fun isUndoneEmpty(): Boolean {
         return undonePaths.isEmpty() //&& undonePaints.isEmpty()
     }
 }
