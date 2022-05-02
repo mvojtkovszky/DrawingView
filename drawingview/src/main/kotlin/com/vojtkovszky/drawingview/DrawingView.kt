@@ -37,8 +37,8 @@ class DrawingView @JvmOverloads constructor(
 
     // region Public attributes
     /**
-     * State holding all necessary information to populate the view and keeping track of it's
-     * active history
+     * State holding all necessary information to populate the view and hold its history.
+     * Setting state will cause view to redraw with new state.
      */
     var state = DrawingViewState()
         set(value) {
@@ -47,13 +47,13 @@ class DrawingView @JvmOverloads constructor(
         }
 
     /**
-     * Color of the paint. Default is
+     * Color of the paint.
      */
     var paintColor = DEFAULT_PAINT_COLOR
         set(value) {
             field = value
             invalidate()
-            drawPaint.color = paintColor
+            drawPaint.color = value
         }
 
     /**
@@ -78,12 +78,12 @@ class DrawingView @JvmOverloads constructor(
      * Flag to determine if drawing is allowed.
      * If false, all touch events will be ignored.
      */
-    var isDrawingEnabled = true // drawing enabled flag
+    var isDrawingEnabled = true
 
     /**
      * Eraser. If set to true, instead of painting, canvas will be clearing.
      */
-    var isErasing = false // isErasing flag
+    var isErasing = false
         set(value) {
             field = value
             drawPaint.isErasing = value
