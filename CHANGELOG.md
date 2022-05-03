@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 1.5.0 (2022-05-02)
+## 1.5.0 (2022-05-03)
 * all properties in `DrawingViewState` are custom, allowing us to fully control serialization
 
 ## 1.4.0 (2022-04-29)
