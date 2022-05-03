@@ -6,6 +6,11 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import com.vojtkovszky.drawingview.data.*
+import com.vojtkovszky.drawingview.data.path.PathAddCircle
+import com.vojtkovszky.drawingview.data.path.PathMoveTo
+import com.vojtkovszky.drawingview.data.path.PathQuadTo
+import com.vojtkovszky.drawingview.data.path.PathReset
 import kotlin.math.abs
 
 @Suppress("MemberVisibilityCanBePrivate", "unused")
@@ -22,27 +27,9 @@ class DrawingView @JvmOverloads constructor(
         private const val DEFAULT_BRUSH_SIZE = 8f
     }
 
-    // region Private attributes
-    private var drawPath: Path = Path() // drawing path
-    private var drawPaint: Paint = Paint().apply { // drawing and canvas paint
-        color = paintColor
-        isAntiAlias = true
-        style = Paint.Style.STROKE
-        strokeJoin = Paint.Join.ROUND
-        strokeCap = Paint.Cap.ROUND
-        strokeWidth = 30f
-    }
-
-    /**
-     * State holding all necessary information to populate the view and keeping track of it's 
-     * active history
-     */
-    var state = DrawingViewState()
-        set(value) {
-            field = value
-            invalidate()
-        }
-
+    // region Private attributes, representing state of
+    private var drawPath: SerializablePath = SerializablePath() // drawing path
+    private var drawPaint: SerializablePaint = SerializablePaint(DEFAULT_PAINT_COLOR, 30f, false)
     private var xStart: Float = 0f // reference positions for last move (x)
     private var yStart: Float = 0f // reference positions for last move (y)
     private var isCurrentlyMoving = false
@@ -50,13 +37,23 @@ class DrawingView @JvmOverloads constructor(
 
     // region Public attributes
     /**
-     * Color of the paint. Default is
+     * State holding all necessary information to populate the view and hold its history.
+     * Setting state will cause view to redraw with new state.
+     */
+    var state = DrawingViewState()
+        set(value) {
+            field = value
+            invalidate()
+        }
+
+    /**
+     * Color of the paint.
      */
     var paintColor = DEFAULT_PAINT_COLOR
         set(value) {
             field = value
             invalidate()
-            drawPaint.color = paintColor
+            drawPaint.color = value
         }
 
     /**
@@ -81,15 +78,15 @@ class DrawingView @JvmOverloads constructor(
      * Flag to determine if drawing is allowed.
      * If false, all touch events will be ignored.
      */
-    var isDrawingEnabled = true // drawing enabled flag
+    var isDrawingEnabled = true
 
     /**
      * Eraser. If set to true, instead of painting, canvas will be clearing.
      */
-    var isErasing = false // isErasing flag
+    var isErasing = false
         set(value) {
             field = value
-            drawPaint.xfermode = if (value) PorterDuffXfermode(PorterDuff.Mode.CLEAR) else null
+            drawPaint.isErasing = value
         }
 
     /**
@@ -113,16 +110,22 @@ class DrawingView @JvmOverloads constructor(
     // endregion
 
     override fun onDraw(canvas: Canvas) {
+        // background color
         canvas.drawColor(canvasColor)
 
+        // draw whole history
         val numStepsInHistory = state.numHistorySteps()
         if (numStepsInHistory > 0) {
             for (i in 0 until numStepsInHistory) {
-                canvas.drawPath(state.getPathFromHistory(i), state.getPaintFromHistory(i))
+                canvas.drawPath(
+                    state.getPathFromHistory(i).getPath(),
+                    state.getPaintFromHistory(i).getPaint()
+                )
             }
         }
 
-        canvas.drawPath(drawPath, drawPaint)
+        // and the current path
+        canvas.drawPath(drawPath.getPath(), drawPaint.getPaint())
 
         super.onDraw(canvas)
     }
@@ -138,12 +141,11 @@ class DrawingView @JvmOverloads constructor(
         val touchY = event.y
 
         when (event.action) {
-
             MotionEvent.ACTION_DOWN -> {
                 state.clearRedoHistory()
 
-                drawPath.reset()
-                drawPath.moveTo(touchX, touchY)
+                drawPath.add(PathReset())
+                drawPath.add(PathMoveTo(x = touchX, y = touchY))
 
                 xStart = touchX
                 yStart = touchY
@@ -155,7 +157,11 @@ class DrawingView @JvmOverloads constructor(
                 val dx = abs(touchX - xStart)
                 val dy = abs(touchY - yStart)
                 if (dx >= touchTolerance || dy >= touchTolerance) {
-                    drawPath.quadTo(xStart, yStart, (touchX + xStart) / 2, (touchY + yStart) / 2)
+                    drawPath.add(PathQuadTo(
+                        x1 = xStart,
+                        y1 = yStart,
+                        x2 = (touchX + xStart) / 2,
+                        y2 = (touchY + yStart) / 2))
                     xStart = touchX
                     yStart = touchY
                     isCurrentlyMoving = true
@@ -163,23 +169,26 @@ class DrawingView @JvmOverloads constructor(
             }
 
             MotionEvent.ACTION_UP -> {
-                // simply touched the canvas, do a dot instead
-                if (!isCurrentlyMoving && xStart == touchX && yStart == touchY) {
-                    drawPath.addCircle(touchX, touchY, 0.1f, Path.Direction.CW)
-                }
-
                 val drawingEmptyBeforeAdding = state.isHistoryEmpty()
 
-                state.addToHistory(drawPath, drawPaint)
+                // simply touched the canvas, do a dot instead
+                if (!isCurrentlyMoving && xStart == touchX && yStart == touchY) {
+                    drawPath.add(PathAddCircle(x = touchX, y = touchY, radius = 0.1f))
+                }
 
-                drawPath = Path()
+                // add path to history
+                state.addToHistory(drawPath, drawPaint)
+                // recreate path and paint for new step
+                drawPath = SerializablePath()
+                drawPaint = SerializablePaint(paintColor, brushSize, isErasing)
+
+                isCurrentlyMoving = false
 
                 // moved from empty to no longer empty
                 if (drawingEmptyBeforeAdding) {
                     listenerEmptyState?.invoke(false)
                 }
-
-                isCurrentlyMoving = false
+                // draw no longer in progress
                 listenerDrawingInProgress?.invoke(false)
             }
 
@@ -255,7 +264,7 @@ class DrawingView @JvmOverloads constructor(
      * Cancel current path in progress
      */
     fun invalidateLastPath() {
-        drawPath.reset()
+        drawPath = SerializablePath()
         invalidate()
     }
 
