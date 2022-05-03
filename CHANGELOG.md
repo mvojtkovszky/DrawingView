@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 1.5.1 (TBD)
+*
+
 ## 1.5.0 (2022-05-03)
 * all properties in `DrawingViewState` are custom, allowing us to fully control serialization
 
