@@ -1,7 +1,9 @@
 # CHANGELOG
 
-## 1.5.1 (TBD)
-*
+## 1.5.1 (2023-08-31)
+* bump Gradle plugin to 8.1.1, Kotlin to 1.9.0
+* bump buildToolsVersion 34.0.0, targetSdkVersion, compileSdkVersion to 34
+* bump core-ktx to 1.10.1, appcompat to 1.6.1, material to 1.9.0
 
 ## 1.5.0 (2022-05-03)
 * all properties in `DrawingViewState` are custom, allowing us to fully control serialization
