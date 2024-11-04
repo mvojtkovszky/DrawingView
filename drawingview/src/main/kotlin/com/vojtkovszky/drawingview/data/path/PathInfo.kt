@@ -1,5 +1,8 @@
 package com.vojtkovszky.drawingview.data.path
 
-import java.io.Serializable
+import kotlinx.serialization.Polymorphic
+import kotlinx.serialization.Serializable
 
-internal open class PathInfo: Serializable
+@Polymorphic
+@Serializable
+open class PathInfo : java.io.Serializable

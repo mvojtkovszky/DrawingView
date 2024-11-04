@@ -1,9 +1,10 @@
 package com.vojtkovszky.drawingview.data
 
-import java.io.Serializable
+import kotlinx.serialization.Serializable
 
+@Serializable
 internal class SerializablePaint(
     var color: Int,
     var strokeWidth: Float,
     var isErasing: Boolean
-): Serializable
+): java.io.Serializable
