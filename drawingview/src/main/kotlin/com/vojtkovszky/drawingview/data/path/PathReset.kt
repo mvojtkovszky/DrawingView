@@ -1,3 +1,8 @@
 package com.vojtkovszky.drawingview.data.path
 
-internal class PathReset: PathInfo()
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+@Serializable
+@SerialName("PathReset")
+internal class PathReset : PathInfo()
