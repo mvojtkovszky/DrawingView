@@ -1,6 +1,7 @@
 # CHANGELOG
 
-## 1.6.0 (TBD)
+## 1.6.0 (2024-11-04)
+* All `DrawingViewState` objects now adopt `@Serializable` annotation.
 * Make `DrawingViewState.isHistoryEmpty`, `DrawingViewState.isUndoneEmpty`,
   `DrawingViewState.numHistorySteps` and `DrawingViewState.numUndoneSteps` public.
 * bump Gradle plugin to 8.7.2, Kotlin to 2.0.20
