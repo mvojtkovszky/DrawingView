@@ -15,6 +15,37 @@ class DrawingViewState: Serializable {
     private val undonePaths = mutableListOf<SerializablePath>()
     private val undonePaints = mutableListOf<SerializablePaint>()
 
+    // region Public
+    /**
+     * return number of available history steps
+     */
+    fun numHistorySteps(): Int {
+        return drawPathHistory.size
+    }
+
+    /**
+     * return number of available undone steps
+     */
+    fun numUndoneSteps(): Int {
+        return undonePaths.size
+    }
+
+    /**
+     * Determine if draw history is empty
+     */
+    fun isHistoryEmpty(): Boolean {
+        return drawPathHistory.isEmpty() //&& drawPaintHistory.isEmpty()
+    }
+
+    /**
+     * Determine if we have any paths or paints in undo history
+     */
+    fun isUndoneEmpty(): Boolean {
+        return undonePaths.isEmpty() //&& undonePaints.isEmpty()
+    }
+    // endregion Public
+
+    // region Internal
     // add path and paint to history
     internal fun addToHistory(path: SerializablePath, paint: SerializablePaint) {
         drawPathHistory.add(path)
@@ -35,16 +66,6 @@ class DrawingViewState: Serializable {
     // return single paint from history on index
     internal fun getPaintFromHistory(index: Int): SerializablePaint {
         return drawPaintHistory[index]
-    }
-
-    // return number of available undone steps
-    internal fun numUndoneSteps(): Int {
-        return undonePaths.size
-    }
-
-    // return number of available history steps
-    internal fun numHistorySteps(): Int {
-        return drawPathHistory.size
     }
 
     // moves latest path and pant from undone list to history list
@@ -68,14 +89,5 @@ class DrawingViewState: Serializable {
         undonePaths.add(drawPathHistory.removeAt(drawPathHistory.size - 1))
         undonePaints.add(drawPaintHistory.removeAt(drawPaintHistory.size - 1))
     }
-
-    // determine if we have any paths or paints in history
-    internal fun isHistoryEmpty(): Boolean {
-        return drawPathHistory.isEmpty() //&& drawPaintHistory.isEmpty()
-    }
-
-    //Determine if we have any paths or paints in undo history
-    internal fun isUndoneEmpty(): Boolean {
-        return undonePaths.isEmpty() //&& undonePaints.isEmpty()
-    }
+    // endregion Internal
 }

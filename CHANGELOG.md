@@ -1,7 +1,10 @@
 # CHANGELOG
 
-## 1.5.2 (TBD)
-* 
+## 1.6.0 (TBD)
+* Make `DrawingViewState.isHistoryEmpty`, `DrawingViewState.isUndoneEmpty`,
+  `DrawingViewState.numHistorySteps` and `DrawingViewState.numUndoneSteps` public.
+* bump Gradle plugin to 8.7.2, Kotlin to 2.0.20
+* bump buildToolsVersion 35.0.0, targetSdkVersion, compileSdkVersion to 35
 
 ## 1.5.1 (2023-08-31)
 * bump Gradle plugin to 8.1.1, Kotlin to 1.9.0
