@@ -24,3 +24,21 @@ dependencies {
     implementation 'com.github.mvojtkovszky:DrawingView:$latest_version'
 }
 ```
+
+## Keep strokes inside the view
+
+By default, DrawingView preserves its original behavior and accepts coordinates from a gesture
+that moves outside its bounds. Enable clamping when adjacent UI must never contain drawing data:
+
+```xml
+<com.vojtkovszky.drawingview.DrawingView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:clampDrawingToBounds="true" />
+```
+
+Or configure it programmatically:
+
+```kotlin
+drawingView.clampDrawingToBounds = true
+```

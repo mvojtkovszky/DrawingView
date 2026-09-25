@@ -81,6 +81,13 @@ class DrawingView @JvmOverloads constructor(
     var isDrawingEnabled = true
 
     /**
+     * When enabled, touch coordinates are clamped so the complete brush stroke stays within
+     * this view's bounds. This is useful when a gesture starts in the view and then moves over
+     * adjacent UI. Disabled by default for backwards compatibility.
+     */
+    var clampDrawingToBounds = false
+
+    /**
      * Eraser. If set to true, instead of painting, canvas will be clearing.
      */
     var isErasing = false
@@ -108,6 +115,23 @@ class DrawingView @JvmOverloads constructor(
      */
     var listenerDrawingInProgress: ((drawInProgress: Boolean) -> Unit)? = null
     // endregion
+
+    init {
+        val styledAttributes = context.obtainStyledAttributes(
+            attrs,
+            R.styleable.DrawingView,
+            defStyle,
+            0,
+        )
+        try {
+            clampDrawingToBounds = styledAttributes.getBoolean(
+                R.styleable.DrawingView_clampDrawingToBounds,
+                false,
+            )
+        } finally {
+            styledAttributes.recycle()
+        }
+    }
 
     override fun onDraw(canvas: Canvas) {
         // background color
@@ -137,8 +161,8 @@ class DrawingView @JvmOverloads constructor(
         }
 
         // mark current coordinates
-        val touchX = event.x
-        val touchY = event.y
+        val touchX = getDrawingCoordinate(event.x, width)
+        val touchY = getDrawingCoordinate(event.y, height)
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -197,6 +221,17 @@ class DrawingView @JvmOverloads constructor(
 
         invalidate()
         return true
+    }
+
+    private fun getDrawingCoordinate(coordinate: Float, dimension: Int): Float {
+        if (!clampDrawingToBounds) {
+            return coordinate
+        }
+
+        val brushRadius = brushSize / 2f
+        val minimum = brushRadius.coerceAtMost(dimension / 2f)
+        val maximum = (dimension - brushRadius).coerceAtLeast(minimum)
+        return coordinate.coerceIn(minimum, maximum)
     }
 
     // region Public methods

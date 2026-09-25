@@ -1,1 +1,2 @@
-jdk: openjdk17
+jdk:
+  - openjdk21

@@ -1,9 +1,10 @@
 apply plugin: 'maven-publish'
 
 tasks.register('javadocJar', Jar) {
+    def dokkaJavadoc = tasks.named('dokkaGeneratePublicationJavadoc')
     dependsOn dokkaJavadoc
     archiveClassifier.set('javadoc')
-    from "$buildDir/dokka/javadoc"
+    from(dokkaJavadoc.flatMap { it.outputDirectory })
 }
 
 afterEvaluate {
@@ -12,15 +13,11 @@ afterEvaluate {
             // Creates a Maven publication called "release".
             release(MavenPublication) {
                 from components.release
-                groupId project.properties['groupId']
-                artifactId project.properties['artifactId']
-                version project.properties['versionName']
+                groupId = providers.gradleProperty('drawingViewGroupId').get()
+                artifactId = providers.gradleProperty('drawingViewArtifactId').get()
+                version = providers.gradleProperty('drawingViewVersion').get()
                 artifact javadocJar
             }
         }
     }
-}
-
-artifacts {
-    archives javadocJar
 }
