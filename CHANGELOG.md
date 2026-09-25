@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 1.7.0 (unreleased)
+## 1.7.0 (2026-09-25)
 * Add optional XML/programmatic clamping of drawing gestures to the view bounds.
 * Bump Gradle to 9.7.1, Android Gradle Plugin to 9.4.1, Kotlin to 2.4.20,
   Dokka to 2.2.0, kotlinx.serialization to 1.11.0, and AndroidX dependencies.
