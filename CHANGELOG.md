@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 1.7.1 (unreleased)
+## 1.7.1 (2026-09-25)
 * Render tap-only gestures as solid round-capped strokes instead of hollow circles.
 
 ## 1.7.0 (2026-09-25)
