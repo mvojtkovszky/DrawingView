@@ -53,6 +53,27 @@ class DrawingViewBoundsInstrumentedTest {
         }
     }
 
+    @Test
+    fun tapWithinTouchToleranceRendersSolidBrushSizedDot() {
+        instrumentation.runOnMainSync {
+            val view = DrawingView(instrumentation.targetContext).apply {
+                brushSize = 20f
+                paintColor = Color.BLACK
+                layout(0, 0, 100, 100)
+            }
+
+            sendTouch(view, MotionEvent.ACTION_DOWN, 50f, 50f)
+            sendTouch(view, MotionEvent.ACTION_UP, 52f, 51f)
+
+            val bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
+            view.draw(Canvas(bitmap))
+
+            assertEquals(Color.BLACK, bitmap.getPixel(52, 51))
+            assertEquals(Color.BLACK, bitmap.getPixel(52, 56))
+            assertEquals(Color.WHITE, bitmap.getPixel(52, 62))
+        }
+    }
+
     private fun sendTouch(view: DrawingView, action: Int, x: Float, y: Float) {
         MotionEvent.obtain(0L, 0L, action, x, y, 0).also { event ->
             view.onTouchEvent(event)

@@ -7,7 +7,6 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import com.vojtkovszky.drawingview.data.*
-import com.vojtkovszky.drawingview.data.path.PathAddCircle
 import com.vojtkovszky.drawingview.data.path.PathMoveTo
 import com.vojtkovszky.drawingview.data.path.PathQuadTo
 import com.vojtkovszky.drawingview.data.path.PathReset
@@ -25,6 +24,7 @@ class DrawingView @JvmOverloads constructor(
         private const val DEFAULT_PAINT_COLOR = Color.BLACK
         private const val DEFAULT_CANVAS_COLOR = Color.WHITE
         private const val DEFAULT_BRUSH_SIZE = 8f
+        private const val TAP_STROKE_LENGTH = 0.1f
     }
 
     // region Private attributes, representing state of
@@ -195,9 +195,18 @@ class DrawingView @JvmOverloads constructor(
             MotionEvent.ACTION_UP -> {
                 val drawingEmptyBeforeAdding = state.isHistoryEmpty()
 
-                // simply touched the canvas, do a dot instead
-                if (!isCurrentlyMoving && xStart == touchX && yStart == touchY) {
-                    drawPath.add(PathAddCircle(x = touchX, y = touchY, radius = 0.1f))
+                // A stroked circle can be rendered as a hollow ring by some Android renderers.
+                // Represent a tap as a tiny open stroke instead, so the round stroke caps produce
+                // a solid dot with the same diameter as the selected brush.
+                if (!isCurrentlyMoving) {
+                    drawPath.add(PathReset())
+                    drawPath.add(PathMoveTo(x = touchX, y = touchY))
+                    drawPath.add(PathQuadTo(
+                        x1 = touchX,
+                        y1 = touchY,
+                        x2 = touchX + TAP_STROKE_LENGTH,
+                        y2 = touchY,
+                    ))
                 }
 
                 // add path to history

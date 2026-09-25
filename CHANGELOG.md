@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 1.7.1 (unreleased)
+* Render tap-only gestures as solid round-capped strokes instead of hollow circles.
+
 ## 1.7.0 (2026-09-25)
 * Add optional XML/programmatic clamping of drawing gestures to the view bounds.
 * Bump Gradle to 9.7.1, Android Gradle Plugin to 9.4.1, Kotlin to 2.4.20,
